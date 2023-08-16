@@ -152,24 +152,63 @@ impl Display for ReceiveMessageError {
         match self.kind {
             #[cfg(any(feature = "zlib-stock", feature = "zlib-simd"))]
             ReceiveMessageErrorType::Compression => {
-                f.write_str("binary message could not be decompressed")
+                f.write_str("binary message could not be decompressed: ")?;
+
+                if let Some(ref source) = self.source {
+                    Display::fmt(&source, f)
+                } else {
+                    f.write_str("Unknown")
+                }
             }
             ReceiveMessageErrorType::Deserializing { ref event } => {
                 f.write_str("gateway event could not be deserialized: event=")?;
-                f.write_str(event)
+                f.write_str(event)?;
+
+                if let Some(ref source) = self.source {
+                    Display::fmt(&source, f)?;
+                }
+                Ok(())
             }
             ReceiveMessageErrorType::FatallyClosed { close_code } => {
                 f.write_str("shard fatally closed: ")?;
 
                 Display::fmt(&close_code, f)
             }
-            ReceiveMessageErrorType::Io => f.write_str("websocket connection error"),
-            ReceiveMessageErrorType::Process => {
-                f.write_str("failed to internally process the received message")
+            ReceiveMessageErrorType::Io => {
+                f.write_str("websocket connection error: ")?;
+
+                if let Some(ref source) = self.source {
+                    Display::fmt(&source, f)
+                } else {
+                    f.write_str("Unknown")
+                }
             }
-            ReceiveMessageErrorType::Reconnect => f.write_str("failed to reconnect to the gateway"),
+            ReceiveMessageErrorType::Process => {
+                f.write_str("failed to internally process the received message: ")?;
+
+                if let Some(ref source) = self.source {
+                    Display::fmt(&source, f)
+                } else {
+                    f.write_str("Unknown")
+                }
+            }
+            ReceiveMessageErrorType::Reconnect => {
+                f.write_str("failed to reconnect to the gateway: ")?;
+
+                if let Some(ref source) = self.source {
+                    Display::fmt(&source, f)
+                } else {
+                    f.write_str("Unknown")
+                }
+            }
             ReceiveMessageErrorType::SendingMessage => {
-                f.write_str("failed to send a message over the websocket")
+                f.write_str("failed to send a message over the websocket: ")?;
+
+                if let Some(ref source) = self.source {
+                    Display::fmt(&source, f)
+                } else {
+                    f.write_str("Unknown")
+                }
             }
         }
     }
