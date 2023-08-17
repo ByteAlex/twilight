@@ -21,10 +21,10 @@ use std::{
 use tokio::time::{sleep, Duration, Instant, Sleep};
 
 /// Number of commands allowed in a [`PERIOD`].
-const COMMANDS_PER_PERIOD: u8 = 115;
+const COMMANDS_PER_PERIOD: u8 = 120;
 
 /// Gateway ratelimiter period duration.
-const PERIOD: Duration = Duration::from_secs(61);
+const PERIOD: Duration = Duration::from_secs(60);
 
 /// Ratelimiter for sending commands over the gateway to Discord.
 #[derive(Debug)]
