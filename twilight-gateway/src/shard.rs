@@ -1080,6 +1080,7 @@ impl Shard {
                             Resume::new(session.sequence(), session.id(), self.config().token());
                         let json = command::prepare(&resume).map_err(ProcessError::from_send)?;
                         self.send(json).await.map_err(ProcessError::from_send)?;
+                        self.status = ConnectionStatus::Resuming;
                     }
                     None => {
                         // If the JoinHandle is finished, or there is none (def: true), we create a new one
@@ -1158,18 +1159,7 @@ impl Shard {
                     source
                 })?,
         );
-
-        if self.session().is_some() {
-            // Defer sending a Resume event until Hello has been received to
-            // guard against the first message being a websocket close message
-            // (causing us to miss replayed dispatch events).
-            // We also set/reset the ratelimiter upon receiving Hello, which
-            // means sending anything before then will not be recorded by the
-            // ratelimiter.
-            self.status = ConnectionStatus::Resuming;
-        } else {
-            self.status = ConnectionStatus::Identifying;
-        }
+        self.status = ConnectionStatus::Identifying;
 
         #[cfg(any(feature = "zlib-stock", feature = "zlib-simd"))]
         self.inflater.reset();
